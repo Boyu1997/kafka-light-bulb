@@ -1,3 +1,5 @@
+import json
+
 from confluent_kafka import Consumer, KafkaError
 
 c = Consumer({
@@ -11,13 +13,30 @@ c = Consumer({
 
 c.subscribe(['light_bulb'])
 
+last_timestamp = -1
+count = {
+    'short': 0,
+    'long': 0
+}
+
 try:
     while True:
         msg = c.poll(0.1)
         if msg is None:
             continue
         elif not msg.error():
-            print('Received message: {0}'.format(msg.value()))
+            data = json.loads(msg.value())
+            if data['new_status'] == 'on':
+                last_timestamp = data['timestamp']
+            elif last_timestamp != -1:
+                if data['timestamp'] - last_timestamp > 0:
+                    if data['timestamp'] - last_timestamp < 0.075:
+                        count['short'] += 1
+                    else:
+                        count['long'] += 1
+                else:
+                    print ('Invalid timestamp for data {0}'.format(msg.value()))
+            print (count)
         elif msg.error().code() == KafkaError._PARTITION_EOF:
             print('End of partition reached {0}/{1}'
                   .format(msg.topic(), msg.partition()))
