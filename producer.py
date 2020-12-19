@@ -62,7 +62,7 @@ def send_letter(letter, p, topic, key):
     time.sleep(0.1)
 
 parser = argparse.ArgumentParser(description='Send string via morse code light bulb.')
-parser.add_argument('--key', type=str, default='2',
+parser.add_argument('--key', type=str, default='1',
                     help='key')
 parser.add_argument('--topic', type=str, default='light_bulb',
                     help='publish topic')
